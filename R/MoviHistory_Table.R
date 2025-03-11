@@ -174,9 +174,9 @@ movihistory<-function(dis, preg, dbpath){
   for(k in 1:nrow(pos)){
     
     if(k == 1){
-      dbWriteTable(con, "Movi History", pos[k,], append = FALSE, overwrite = TRUE, row.names = FALSE)
+      dbWriteTable(con, "MoviHistory", pos[k,], append = FALSE, overwrite = TRUE, row.names = FALSE)
     }else{
-      dbWriteTable(con, "Movi History", pos[k,], append = TRUE, row.names = FALSE)
+      dbWriteTable(con, "MoviHistory", pos[k,], append = TRUE, row.names = FALSE)
     }
     
   }
