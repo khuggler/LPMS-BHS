@@ -1,5 +1,5 @@
 
-collartable<-function(sad, dbpath){
+collartable<-function(sad, dbpath = NULL, export = F){
   
   collars<-sad %>%
     distinct(Animal_ID, Capture_Date, .keep_all = T) %>%
@@ -72,20 +72,27 @@ collartable<-function(sad, dbpath){
     
   }
   
+  if(!is.null(dbpath)){
   con <- dbConnect(odbc::odbc(),
                    Driver = "Microsoft Access Driver (*.mdb, *.accdb)",
                    DBQ = paste0(dbpath, 'LPMS_MasterDatabase.accdb'))
+  }
   
   #con <- dbConnect(odbc::odbc(), "LPMS")
   
+  if(export == TRUE){
   for(k in 1:nrow(collar_hist)){
     
     if(k == 1){
-      dbWriteTable(con, "Collar Deployment", collar_hist[k,], append = FALSE, overwrite = TRUE, row.names = FALSE)
+      dbWriteTable(con, "CollarDeployment", collar_hist[k,], append = FALSE, overwrite = TRUE, row.names = FALSE)
     }else{
-        dbWriteTable(con, "Collar Deployment", collar_hist[k,], append = TRUE, row.names = FALSE)
+        dbWriteTable(con, "CollarDeployment", collar_hist[k,], append = TRUE, row.names = FALSE)
     }
   }
+  
+}else{
+  return(collar_hist)
+}
   
   RODBC::odbcCloseAll()
   

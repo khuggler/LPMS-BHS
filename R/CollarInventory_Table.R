@@ -1,4 +1,4 @@
-collarinventory<-function(sad, gps){
+collarinventory<-function(sad, gps, dbpath){
   
   sad<-sad %>%
     filter(Capture_GMU %in% c('21', '21A', '28')) %>%
@@ -46,17 +46,19 @@ collarinventory<-function(sad, gps){
  
   con <- dbConnect(odbc::odbc(),
                    Driver = "Microsoft Access Driver (*.mdb, *.accdb)",
-                   DBQ = "C:/Users/katey.huggler/Dropbox/PostDoc/Data/Capture/MasterDB/LPMS_MasterDatabase.accdb")
+                   DBQ = paste0(dbpath, 'LPMS_MasterDatabase.accdb'))
   
   #con <- dbConnect(odbc::odbc(), "LPMS")
   
   for(k in 1:nrow(collars)){
     
     if(k == 1){
-      dbWriteTable(con, "Collar Inventory", collars[k,], append = FALSE, overwrite = TRUE, row.names = FALSE)
+      dbWriteTable(con, "CollarInventory", collars[k,], append = FALSE, overwrite = TRUE, row.names = FALSE)
     }else{
-    dbWriteTable(con, "Collar Inventory", collars[k,], append = TRUE, row.names = FALSE)
+    dbWriteTable(con, "CollarInventory", collars[k,], append = TRUE, row.names = FALSE)
     }
   }
+  
+  RODBC::odbcCloseAll()
   
 }

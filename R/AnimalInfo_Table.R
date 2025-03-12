@@ -1,5 +1,4 @@
-
-animalinfo<-function(sad, collar, cap, dbpath){
+animalinfo<-function(sad, collar, cap, dbpath = NULL, export = F){
 
 # calculate age and dob for each animal 
 agetab<-sad %>%
@@ -97,7 +96,7 @@ animalinfo<-sad %>%
                                    as.numeric(abs(difftime(DOB, Sys.Date(), units = "days"))))) %>%
   left_join(morttab[, c('Animal_ID', 'AnimalStatus', 'Capture_Date')], by = c('Capture_Date', 'Animal_ID')) %>%
   mutate(AnimalStatus = ifelse(is.na(AnimalStatus), 'Alive', AnimalStatus)) %>%
-  dplyr::select(Animal_ID, DOB, AgeatCapYears, AgeYears, AgeDays, Sex, Capture_Date, Cap_Lat, Cap_Long, CaptureNumber, AnimalStatus, 
+  dplyr::select(Animal_ID, DOB, Age_Class, AgeatCapYears, AgeYears, AgeDays, Sex, Capture_Date, Cap_Lat, Cap_Long, CaptureNumber, AnimalStatus, 
          Collar_Serial_No, Radio_Frequency, CollarType, CensorDate, CensorType, BCS,Oral_Swab, Ear_Swab, Fecal_Swab, Blood_Drawn) %>%
   mutate(Pkey = paste0(Animal_ID, "_", CaptureNumber))
               
@@ -125,7 +124,7 @@ cap<-cap %>%
 
 animalinfo<-animalinfo %>%
   left_join(cap, by = 'Pkey') %>%
-  dplyr::select(Animal_ID, EweGroup, DOB, AgeatCapYears, AgeYears, AgeDays, Sex, Capture_Date, 
+  dplyr::select(Animal_ID, EweGroup, DOB, Age_Class, AgeatCapYears, AgeYears, AgeDays, Sex, Capture_Date, 
          Cap_Lat, Cap_Long, CaptureNumber, AnimalStatus, 
          Collar_Serial_No, Radio_Frequency, CollarType, Manufacturer, 
          `Hardware side`, `Bottom collar color`, `Top collar color`, 
@@ -207,13 +206,15 @@ animalinfo<-animalinfo %>%
   mutate(Pkey = paste0(AID, "_", CaptureNumber))
 
 
-
+if(!is.null(dbpath)){
 con <- dbConnect(odbc::odbc(),
                  Driver = "Microsoft Access Driver (*.mdb, *.accdb)",
                  DBQ = paste0(dbpath, 'LPMS_MasterDatabase.accdb'))
+}
 
 #con <- dbConnect(odbc::odbc(), "LPMS")
 
+if(export == TRUE){
 for(k in 1:nrow(animalinfo)){
   
   if(k == 1){
@@ -221,6 +222,10 @@ for(k in 1:nrow(animalinfo)){
   }else{
   dbWriteTable(con, "AnimalInfo", animalinfo[k,], append = TRUE, row.names = FALSE)
   }
+}
+  
+}else{
+  return(animalinfo)
 }
 
 RODBC::odbcCloseAll()

@@ -29,6 +29,10 @@ source('C:/Users/katey.huggler/Dropbox/PostDoc/Code/DBManagement/Mortality_Table
 source('C:/Users/katey.huggler/Dropbox/PostDoc/Code/DBManagement/MoviHistory_Table.R')
 source('C:/Users/katey.huggler/Dropbox/PostDoc/Code/DBManagement/FailSlip_Table.R')
 
+# run once 
+#source('C:/Users/katey.huggler/Dropbox/PostDoc/Code/DBManagement/CollarInventory_Table.R')
+
+
 dbpath = 'C:/Users/katey.huggler/Dropbox/PostDoc/Data/Capture/MasterDB/'
 
 
@@ -40,9 +44,8 @@ dis<-readxl::read_xlsx('D:/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/M
 preg<-readxl::read_xlsx('D:/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/MoviQuery.xlsx', sheet = "Preg")
 
 
-con<-dbConnect(RSQLite::SQLite(), "C:/Users/Katey/Box/WSF-GIA-FY22/Database/BHS_TriState.db")
-dbListTables(con)
-gps<-dbReadTable(con, 'AnimalID_GPS')
+
+
 
 source('D:/Dropbox/PostDoc/Code/DBManagement/AnimalInfo_Table.R')
 source('D:/Dropbox/PostDoc/Code/DBManagement/DiseaseTable.R')
@@ -51,17 +54,21 @@ source('D:/Dropbox/PostDoc/Code/DBManagement/Mortality_Table.R')
 source('D:/Dropbox/PostDoc/Code/DBManagement/MoviHistory_Table.R')
 source('D:/Dropbox/PostDoc/Code/DBManagement/FailSlip_Table.R')
 
+# run once 
+#source('D:/Dropbox/PostDoc/Code/DBManagement/CollarInventory_Table.R')
+
+
 dbpath = 'D:/Dropbox/PostDoc/Data/Capture/MasterDB/'
 
-# run once 
-#source('C:/Users/katey.huggler/Dropbox/PostDoc/Code/DBManagement/CollarInventory_Table.R')
 
-animalinfo(sad, collar, cap, dbpath)
+
+animalinfo(sad, collar, cap, dbpath, export = F)
 diseasetable(dis, preg, dbpath)
 collartable(sad, dbpath)
 mortable(sad, dbpath)
 movihistory(dis, preg, dbpath)
 failtable(sad, gps, dbpath)
+collarinventory(sad, gps, dbpath)
 
 
 ## ----------------------- ##
