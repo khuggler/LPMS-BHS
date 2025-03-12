@@ -83,7 +83,11 @@ mortable<-function(sad, dbpath){
       'Accident' = 'Accident', 
       'Unknown' = 'Unknown', 
       'Capture Mortality' = 'Capture Mortality', 
-      'Unknown Nonpredation' = 'Unknown'
+      'Unknown Nonpredation' = 'Unknown', 
+      'Hunter Harvest' = 'Human-Related', 
+      'Mountain Lion' = 'Predation', 
+      'Coyote' = 'Predation', 
+      'Bobcat' = 'Predation'
       
     )
     

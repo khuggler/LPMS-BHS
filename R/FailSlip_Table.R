@@ -108,19 +108,19 @@ failtable<-function(sad, gps, dbpath){
       filter(is.na(CensorDate) & is.na(MortDate))
     
     # get last fix date 
-    lpms<-subset(gps, Herd == "Lower Panther Main Salmon")
-    lpms$acquisitiontime<-as.POSIXct(lpms$acquisitiontime, format = "%Y-%m-%d %H:%M:%S")
+    #lpms<-subset(gps, Herd == "Lower Panther Main Salmon")
+    gps$tdate<-as.POSIXct(gps$tdate, format = "%Y-%m-%d %H:%M:%S")
     
-    lpms<-lpms %>%
-      filter(AnimalID %in% mmm$AID) %>%
-      group_by(AnimalID) %>%
-      filter(acquisitiontime == max(acquisitiontime, na.rm = T)) %>%
+    lpms<-gps %>%
+      filter(AID %in% mmm$AID) %>%
+      group_by(AID) %>%
+      filter(tdate == max(tdate, na.rm = T)) %>%
       ungroup() %>%
-      dplyr::select(AnimalID, acquisitiontime) %>%
-      rename(LastFix = acquisitiontime)
+      dplyr::select(AID, tdate) %>%
+      rename(LastFix = tdate)
    
     mmm<-mmm %>%
-      left_join(lpms, by = c('AID' = 'AnimalID')) %>%
+      left_join(lpms, by = 'AID') %>%
       mutate(Diff = abs(as.numeric(difftime(Sys.Date(), LastFix, units = "days")))) %>%
       filter(Diff > 30) %>%
       mutate(CensorDate = strftime(LastFix, format = "%Y-%m-%d")) %>%

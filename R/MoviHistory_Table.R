@@ -5,7 +5,12 @@ movihistory<-function(dis, preg, dbpath){
     mutate(TestLab = 'WADDL') %>% 
     distinct(ScanID, test, .keep_all = T) %>%
     dplyr::select(ScanID, Animal_ID, Capture_Date, test, TestResult, TestLab)
-  
+  # 
+  # x<-wide_df %>%
+  #   group_by(Animal_ID, test, Capture_Date) %>%
+  #   summarize(n = n()) %>%
+  #   ungroup() %>%
+  #   filter(n >= 2)
   
   wide_df<-wide_df %>%
     spread(key = test, value = TestResult)
@@ -69,7 +74,7 @@ movihistory<-function(dis, preg, dbpath){
     group_by(AID) %>%
     mutate(StateChange = ifelse(length(unique(pcr)) == 1, 'NO', 'YES')) %>%
     ungroup() %>%
-    mutate(Carrier = ifelse(StateChange == "YES", 'YES', 'YES'))
+    mutate(Carrier = ifelse(StateChange == "YES", 'NO', 'YES'))
   
   
   carriers<-animals_sorted %>%

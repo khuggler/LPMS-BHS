@@ -16,10 +16,7 @@ cap<-readxl::read_xlsx('C:/Users/katey.huggler/State of Idaho/Research Group-Low
 dis<-readxl::read_xlsx('C:/Users/katey.huggler/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/MoviQuery.xlsx')
 preg<-readxl::read_xlsx('C:/Users/katey.huggler/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/MoviQuery.xlsx', sheet = "Preg")
 
-
-con<-dbConnect(RSQLite::SQLite(), "C:/Users/katey.huggler/Box/WSF-GIA-FY22/Database/BHS_TriState.db")
-dbListTables(con)
-gps<-dbReadTable(con, 'AnimalID_GPS')
+gps<-st_read('C:/Users/katey.huggler/Dropbox/PostDoc/Data/GPSData/LPMS_GPS.shp')
 
 
 source('C:/Users/katey.huggler/Dropbox/PostDoc/Code/DBManagement/AnimalInfo_Table.R')
@@ -43,8 +40,7 @@ cap<-readxl::read_xlsx('D:/State of Idaho/Research Group-Lower Panther - Main Sa
 dis<-readxl::read_xlsx('D:/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/MoviQuery.xlsx')
 preg<-readxl::read_xlsx('D:/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/MoviQuery.xlsx', sheet = "Preg")
 
-
-
+gps<-read.csv('D:/Dropbox/PostDoc/Data/GPSData/LPMS_GPS.csv')
 
 
 source('D:/Dropbox/PostDoc/Code/DBManagement/AnimalInfo_Table.R')
@@ -54,6 +50,7 @@ source('D:/Dropbox/PostDoc/Code/DBManagement/Mortality_Table.R')
 source('D:/Dropbox/PostDoc/Code/DBManagement/MoviHistory_Table.R')
 source('D:/Dropbox/PostDoc/Code/DBManagement/FailSlip_Table.R')
 
+
 # run once 
 #source('D:/Dropbox/PostDoc/Code/DBManagement/CollarInventory_Table.R')
 
@@ -62,13 +59,13 @@ dbpath = 'D:/Dropbox/PostDoc/Data/Capture/MasterDB/'
 
 
 
-animalinfo(sad, collar, cap, dbpath, export = F)
+animalinfo(sad, collar, cap, dbpath, export = T)
 diseasetable(dis, preg, dbpath)
-collartable(sad, dbpath)
+collartable(sad, dbpath, export = T)
 mortable(sad, dbpath)
 movihistory(dis, preg, dbpath)
 failtable(sad, gps, dbpath)
-collarinventory(sad, gps, dbpath)
+#collarinventory(sad, gps, dbpath)
 
 
 ## ----------------------- ##
@@ -80,4 +77,4 @@ source('D:/Dropbox/PostDoc/Code/DBManagement/PrevPlots.R')
 acc_path = 'D:/Dropbox/PostDoc/Data/Capture/MasterDB/'
 savewd = 'D:/Dropbox/PostDoc/'
 
-prevplots(acc_path, savewd = savewd, cap = cap)
+prev<-prevplots(acc_path, savewd = savewd, collar = collar, return_summary = T)
