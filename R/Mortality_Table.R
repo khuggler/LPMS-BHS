@@ -1,4 +1,4 @@
-mortable<-function(sad, dbpath){
+mortable<-function(sad, dbpath = NULL, export = F){
   
   mortab<-sad %>%
     distinct(Animal_ID, Capture_Date, .keep_all = T) %>%
@@ -113,13 +113,15 @@ mortable<-function(sad, dbpath){
     mutate(LastKnownAlive = MortDate - days(1)) %>%
     left_join(lastcap, by = c("AID" = "Animal_ID")) %>%
     filter(!is.na(MortDate))
-  
+
+  if(!is.null(dbpath)){
   con <- dbConnect(odbc::odbc(),
                    Driver = "Microsoft Access Driver (*.mdb, *.accdb)",
                    DBQ = paste0(dbpath, 'LPMS_MasterDatabase.accdb'))
+  }
   
   #con <- dbConnect(odbc::odbc(), "LPMS")
-  
+  if(export == TRUE){
   for(k in 1:nrow(morts)){
     
     if(k == 1){
@@ -127,6 +129,9 @@ mortable<-function(sad, dbpath){
     }else{
     dbWriteTable(con, "Mortalities", morts[k,], append = TRUE, row.names = FALSE)
     }
+  }
+  }else{
+    return(morts)
   }
   
   RODBC::odbcCloseAll()

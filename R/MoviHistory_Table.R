@@ -1,55 +1,16 @@
-movihistory<-function(dis, preg, dbpath){
- 
-  wide_df <- dis %>%
-    mutate(test = case_when(TestLab == "HUYVAERT" ~ 'BIOMEME', T ~ test)) %>%
-    mutate(TestLab = 'WADDL') %>% 
-    distinct(ScanID, test, .keep_all = T) %>%
-    dplyr::select(ScanID, Animal_ID, Capture_Date, test, TestResult, TestLab)
-  # 
-  # x<-wide_df %>%
-  #   group_by(Animal_ID, test, Capture_Date) %>%
-  #   summarize(n = n()) %>%
-  #   ungroup() %>%
-  #   filter(n >= 2)
+movihistory<-function(dis, preg, sad, collar, cap, gps, dbpath = NULL, export = F){
   
-  wide_df<-wide_df %>%
-    spread(key = test, value = TestResult)
-  
-  
-  preg_df<-preg %>%
-    distinct(ScanID, PregTestType, .keep_all = T) %>%
-    dplyr::select(ScanID, Animal_ID, Capture_Date, PregTestType, PregResult)
-  
-  preg_wid<-preg_df %>%
-    spread(key = PregTestType, value = PregResult)
-  
-  
-  wide_df<-wide_df %>%
-    left_join(preg_wid, by = c("Animal_ID", "Capture_Date")) %>%
-    dplyr::select(-ScanID.y)
-  
-  names(wide_df)<-c('ScanID', 'AID', 'CaptureDate', 'TestLab', 'biomeme', 'elisa', 
-                    'mlst', 'pcr', 'pspb', 'ultrasound')
-  
-  wide_df<-wide_df %>%
-    mutate(CaptureDate = ymd(CaptureDate)) %>%
+  info<-animalinfo(sad, collar, cap, export = F) 
+  info<-info %>%
     group_by(AID) %>%
-    arrange(AID, CaptureDate) %>%
-    mutate(CaptureNumber = row_number()) %>%
-    mutate(pspb = ifelse(pspb == "NOT-PREGNANT (OPEN)", 'NOT PREGNANT', pspb)) %>%
-    mutate(ultrasound = ifelse(ultrasound == "NOT-PREGNANT (OPEN)", 'NOT PREGNANT', ultrasound)) %>%
-    mutate(pregnancy = ifelse(ultrasound == "NOT PREGNANT" & !is.na(pspb), 
-                              pspb, ultrasound)) %>%
-    mutate(pregnancy = ifelse(is.na(ultrasound), pspb, pregnancy)) %>%
-    mutate(CaptureDate = ymd(CaptureDate)) %>%
-    mutate(SampleYear = strftime(CaptureDate, format = "%Y")) %>%
-    dplyr::select(ScanID, AID, CaptureDate, CaptureNumber, SampleYear, elisa, pcr, mlst, pspb, ultrasound, 
-                  pregnancy) %>%
-    mutate(Pkey = paste0(AID, "_", CaptureNumber))
+    summarize(AgeYears = last(AgeYears), 
+              Age_Class = last(Age_Class))
   
+  morts<-mortable(sad, export = F)
   
+  fails<-failtable(sad, gps)
   
-  
+  wide_df<-diseasetable(dis, preg, export = F)
   
   # bind whether each individual was a chronic carrier in the particular year of interest
   
@@ -61,7 +22,7 @@ movihistory<-function(dis, preg, dbpath){
   # remove duplicate rows in the capture database 
   cap<-wide_df %>%
     distinct(Pkey, .keep_all = T) %>%
-    filter(!is.na(pcr))
+    filter(!is.na(pcr)) 
   
   animals_with_multiple_positives <- cap %>%
     group_by(AID) %>%
@@ -153,7 +114,12 @@ movihistory<-function(dis, preg, dbpath){
     mutate(elisa = stringr::str_replace_all(elisa, movi)) %>%
     summarise(DateRecord = paste(CapName, collapse = "|"), 
               `PCR Record` = paste(pcr, collapse = "|"), 
-              `ELISA Record` = paste(elisa, collapse = "|")) 
+              `ELISA Record` = paste(elisa, collapse = "|")) %>%
+    ungroup() %>%
+    left_join(info, by = "AID") %>%
+    mutate(MortStatus = case_when(AID %in% morts$AID ~ 'Dead',
+                              AID %in% fails$AID ~ 'Unknown', 
+                              T ~ 'Alive'))
   
   
   movi<-c(
@@ -169,13 +135,14 @@ movihistory<-function(dis, preg, dbpath){
     left_join(records, by = "AID") 
   
 
-  
+  if(!is.null(dbpath)){
   con <- dbConnect(odbc::odbc(),
                    Driver = "Microsoft Access Driver (*.mdb, *.accdb)",
                    DBQ = paste0(dbpath, 'LPMS_MasterDatabase.accdb'))
+  }
   
   #con <- dbConnect(odbc::odbc(), "LPMS")
-  
+  if(export == TRUE){
   for(k in 1:nrow(pos)){
     
     if(k == 1){
@@ -184,6 +151,9 @@ movihistory<-function(dis, preg, dbpath){
       dbWriteTable(con, "MoviHistory", pos[k,], append = TRUE, row.names = FALSE)
     }
     
+  }
+  }else{
+    return(pos)
   }
   
   

@@ -1,4 +1,4 @@
-failtable<-function(sad, gps, dbpath){
+failtable<-function(sad, gps, dbpath = NULL, export = F){
     mortab<-sad %>%
       distinct(Animal_ID, Capture_Date, .keep_all = T) %>%
       filter(Capture_GMU %in% c('21', '21A', '28')) %>%
@@ -132,12 +132,14 @@ failtable<-function(sad, gps, dbpath){
     
     failslip<-rbind(mmm, failed)
     
+    if(!is.null(dbpath)){
     con <- dbConnect(odbc::odbc(),
                      Driver = "Microsoft Access Driver (*.mdb, *.accdb)",
                      DBQ = paste0(dbpath, 'LPMS_MasterDatabase.accdb'))
+    }
     
     #con <- dbConnect(odbc::odbc(), "LPMS")
-    
+    if(export == TRUE){
     for(k in 1:nrow(failslip)){
       
       if(k == 1){
@@ -146,8 +148,10 @@ failtable<-function(sad, gps, dbpath){
         dbWriteTable(con, "Failed", failslip[k,], append = TRUE, row.names = FALSE)
       }
     }
+    }else{
+      return(failslip)
+    }
     
     RODBC::odbcCloseAll()
     
-    
-  }
+      }

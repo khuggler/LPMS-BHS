@@ -101,35 +101,33 @@ animalinfo<-sad %>%
   mutate(Pkey = paste0(Animal_ID, "_", CaptureNumber))
               
 
-collar<-collar %>%
+collars<-collar %>%
   rename(Radio_Frequency = Frequency, 
          Animal_ID = `Animal ID`) %>%
   mutate(Radio_Frequency = as.numeric(Radio_Frequency))
 
 ## append collar mark information
 animalinfo<- animalinfo %>%
-  left_join(collar[, c('Animal_ID', 'Type', 'Radio_Frequency', 'Manufacturer', 'Hardware side', 
-                       'Bottom collar color', 'Top collar color', 'EweGroup')], by = c('Animal_ID', 'Radio_Frequency'))
+  left_join(collars[, c('Animal_ID', 'Type', 'Radio_Frequency', 'Manufacturer', 'Hardware side', 
+                       'Bottom collar color', 'Top collar color')], by = c('Animal_ID', 'Radio_Frequency'))
 
 ## append ear tag information
-cap<-cap %>%
+cap2<-cap %>%
   group_by(`Animal ID`) %>%
   arrange(`Capture Date`) %>%
   mutate(CaptureNumber = row_number()) %>%
   ungroup() %>%
   mutate(Pkey = paste0(`Animal ID`, "_", CaptureNumber)) %>%
-  dplyr::select(EarTagColor, EarTagNumber, EarTagButton, Weight, MaxFat, BloodTubes, 
-         NasalWash, `Nasal Swab`, PharyngealSwab, DNA, Pkey)
+  dplyr::select(Weight, MaxFat, PercentBodyFat, EweGroup, Pkey)
 
 
 animalinfo<-animalinfo %>%
-  left_join(cap, by = 'Pkey') %>%
+  left_join(cap2, by = 'Pkey') %>%
   dplyr::select(Animal_ID, EweGroup, DOB, Age_Class, AgeatCapYears, AgeYears, AgeDays, Sex, Capture_Date, 
          Cap_Lat, Cap_Long, CaptureNumber, AnimalStatus, 
          Collar_Serial_No, Radio_Frequency, CollarType, Manufacturer, 
          `Hardware side`, `Bottom collar color`, `Top collar color`, 
-         EarTagColor, EarTagNumber, EarTagButton, 
-         Weight, MaxFat, BloodTubes, NasalWash, `Nasal Swab`, PharyngealSwab, DNA)%>%
+         Weight, MaxFat, PercentBodyFat)%>%
   rename(AID = Animal_ID, 
          CapLat = Cap_Lat, 
          CapLong = Cap_Long, 
@@ -199,10 +197,10 @@ animalinfo<-animalinfo %>%
          Brand = stringr::str_replace_all(Brand, brand), 
          Hardware = stringr::str_replace_all(Hardware, hardware), 
          TopCollar = stringr::str_replace_all(TopCollar, color),
-         BottomCollar = stringr::str_replace_all(BottomCollar, color), 
-         EarTagColor = stringr::str_replace_all(EarTagColor, color), 
-         EarTagButton = stringr::str_replace_all(EarTagButton, color), 
-         DNA = stringr::str_replace_all(DNA, dna)) %>%
+         BottomCollar = stringr::str_replace_all(BottomCollar, color)) %>% 
+         # EarTagColor = stringr::str_replace_all(EarTagColor, color), 
+         # EarTagButton = stringr::str_replace_all(EarTagButton, color), 
+         # DNA = stringr::str_replace_all(DNA, dna)) %>%
   mutate(Pkey = paste0(AID, "_", CaptureNumber))
 
 

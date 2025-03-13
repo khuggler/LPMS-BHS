@@ -12,7 +12,7 @@ require(cowplot)
 
 sad<-read.csv('C:/Users/katey.huggler/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/SAD.csv')
 collar<-readxl::read_xlsx('C:/Users/katey.huggler/State of Idaho/Research Group-Lower Panther - Main Salmon Sheep Research - Collars/LPMSCollarDeployment_250304.xlsx')
-cap<-readxl::read_xlsx('C:/Users/katey.huggler/State of Idaho/Research Group-Lower Panther - Main Salmon Sheep Research - Capture/LPMS_Capture_250204.xlsx')
+cap<-readxl::read_xlsx('D:/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/LPMSSheepCapture_250311.xlsx')
 dis<-readxl::read_xlsx('C:/Users/katey.huggler/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/MoviQuery.xlsx')
 preg<-readxl::read_xlsx('C:/Users/katey.huggler/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/MoviQuery.xlsx', sheet = "Preg")
 
@@ -36,7 +36,7 @@ dbpath = 'C:/Users/katey.huggler/Dropbox/PostDoc/Data/Capture/MasterDB/'
 ## DESKTOP ## 
 sad<-read.csv('D:/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/SAD.csv')
 collar<-readxl::read_xlsx('D:/State of Idaho/Research Group-Lower Panther - Main Salmon Sheep Research - LPMS/Collars/LPMSCollarDeployment_250304.xlsx')
-cap<-readxl::read_xlsx('D:/State of Idaho/Research Group-Lower Panther - Main Salmon Sheep Research - LPMS/Capture/LPMS_Capture_250204.xlsx')
+cap<-readxl::read_xlsx('D:/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/LPMSSheepCapture_250311.xlsx')
 dis<-readxl::read_xlsx('D:/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/MoviQuery.xlsx')
 preg<-readxl::read_xlsx('D:/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/MoviQuery.xlsx', sheet = "Preg")
 
@@ -60,11 +60,11 @@ dbpath = 'D:/Dropbox/PostDoc/Data/Capture/MasterDB/'
 
 
 animalinfo(sad, collar, cap, dbpath, export = T)
-diseasetable(dis, preg, dbpath)
+diseasetable(dis, preg, dbpath, export = T)
 collartable(sad, dbpath, export = T)
-mortable(sad, dbpath)
-movihistory(dis, preg, dbpath)
-failtable(sad, gps, dbpath)
+mortable(sad, dbpath, export = T)
+movihistory(dis, preg, sad, collar, cap, gps, dbpath, export = T)
+failtable(sad, gps, dbpath, export = T)
 #collarinventory(sad, gps, dbpath)
 
 
@@ -75,6 +75,6 @@ failtable(sad, gps, dbpath)
 source('D:/Dropbox/PostDoc/Code/DBManagement/PrevPlots.R')
 
 acc_path = 'D:/Dropbox/PostDoc/Data/Capture/MasterDB/'
-savewd = 'D:/Dropbox/PostDoc/'
+savewd = 'C:/Users/Katey/OneDrive - State of Idaho/Documents/GitHub/LPMS-BHS/Plots/'
 
 prev<-prevplots(acc_path, savewd = savewd, collar = collar, return_summary = T)
