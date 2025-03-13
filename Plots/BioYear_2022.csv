@@ -1,0 +1,5 @@
+"","Year","Herd","Sex","n.risk","n.event","surv","std.err","lower","upper"
+"1",2022,"Sex=Female"," Herd=Clear Creek ",15,0,1,0,1,1
+"2",2022,"Sex=Female"," Herd=Ebenezer    ",34,3,0.830827067669173,0.0898156568607077,0.67219057635006,1
+"3",2022,"Sex=Female"," Herd=Indianola   ",43,5,0.745614035087719,0.0980788920125311,0.576163954961736,0.96489946053066
+"4",2022,"Sex=Female"," Herd=Tower Kriley",14,0,1,0,1,1

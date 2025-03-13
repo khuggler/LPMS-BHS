@@ -78,3 +78,13 @@ acc_path = 'D:/Dropbox/PostDoc/Data/Capture/MasterDB/'
 savewd = 'C:/Users/Katey/OneDrive - State of Idaho/Documents/GitHub/LPMS-BHS/Plots/'
 
 prev<-prevplots(acc_path, savewd = savewd, collar = collar, return_summary = T)
+
+
+
+## adult survival 
+source('D:/Dropbox/PostDoc/Code/DBManagement/AdultSurvival.R')
+yearstart = 2020
+yearend = 2024
+
+adultsurvival(acc_path, yearstart, yearend, savewd)
+
