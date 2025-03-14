@@ -60,11 +60,11 @@ dbpath = 'D:/Dropbox/PostDoc/Data/Capture/MasterDB/'
 
 
 animalinfo(sad, collar, cap, dbpath, export = T)
-diseasetable(dis, preg, dbpath, export = T)
+failtable(sad, gps, dbpath, export = T)
 collartable(sad, dbpath, export = T)
+diseasetable(dis, preg, dbpath, export = T)
 mortable(sad, dbpath, export = T)
 movihistory(dis, preg, sad, collar, cap, gps, dbpath, export = T)
-failtable(sad, gps, dbpath, export = T)
 #collarinventory(sad, gps, dbpath)
 
 

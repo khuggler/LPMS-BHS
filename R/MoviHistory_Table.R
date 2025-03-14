@@ -4,7 +4,8 @@ movihistory<-function(dis, preg, sad, collar, cap, gps, dbpath = NULL, export = 
   info<-info %>%
     group_by(AID) %>%
     summarize(AgeYears = last(AgeYears), 
-              Age_Class = last(Age_Class))
+              Age_Class = last(Age_Class), 
+              EweGroup = last(EweGroup))
   
   morts<-mortable(sad, export = F)
   

@@ -17,17 +17,20 @@ failtable<-function(sad, gps, dbpath = NULL, export = F){
     
     for(j in 1:length(animals)){
       sub<-subset(mortab, Animal_ID == animals[j])
+      sub<-sub %>%
+        arrange(Capture_Date)
       
       # for some unknown reason, reacptures are censored the day they are recpatured, need to change that 
       sub$CensorDate<-ifelse(sub$CensorType == "Recapture", NA, as.character(sub$CensorDate))
-      sub$CensorDate<-ymd(sub$CensorDate)
+      CensorDate<-sub[nrow(sub), 'CensorDate']
+      CensorDate<-ymd(CensorDate)
       
       morts$AID[j]<-animals[j]
       morts$Sex[j]<-sub$Sex[1]
       
       # did the animal die?
       mortcheck<-is.na(sub$FateDate)
-      censorcheck<-is.na(sub$CensorDate)
+      censorcheck<-is.na(CensorDate)
       
       if(FALSE %in% mortcheck){ # the animal does have a mort date
         mortdate<-max(sub$FateDate, na.rm = T)
