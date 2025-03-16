@@ -7,6 +7,7 @@ require(tidyr)
 require(ggplot2)
 require(cowplot)
 
+
 ## LAPTOP ##
 
 
@@ -64,7 +65,7 @@ failtable(sad, gps, dbpath, export = T)
 collartable(sad, dbpath, export = T)
 diseasetable(dis, preg, dbpath, export = T)
 mortable(sad, dbpath, export = T)
-movihistory(dis, preg, sad, collar, cap, gps, dbpath, export = T)
+movihistory(dis, preg, sad, collar, cap, gps, yearstart = 2019, yearend = 2028, dbpath, export = T)
 #collarinventory(sad, gps, dbpath)
 
 

@@ -1,4 +1,10 @@
-movihistory<-function(dis, preg, sad, collar, cap, gps, dbpath = NULL, export = F){
+movihistory<-function(dis, preg, sad, collar, cap, gps, yearstart = 2019, yearend = 2028, dbpath = NULL, export = F){
+  
+  bio.years<-data.frame(Year = yearstart:yearend)
+  bio.years$StartDate<-as.Date(paste0(bio.years$Year, "-", "05-01"), format = "%Y-%m-%d")
+  bio.years$EndDate<-as.Date(paste0(bio.years$Year + 1, "-", "04-30"), format = "%Y-%m-%d")
+  
+  
   
   info<-animalinfo(sad, collar, cap, export = F) 
   info<-info %>%
@@ -12,6 +18,10 @@ movihistory<-function(dis, preg, sad, collar, cap, gps, dbpath = NULL, export = 
   fails<-failtable(sad, gps)
   
   wide_df<-diseasetable(dis, preg, export = F)
+  wide_df<- wide_df %>%
+   rowwise() %>%
+    mutate(BioYear = bio.years$Year[which(CaptureDate >= bio.years$StartDate & CaptureDate < bio.years$EndDate)]) %>%
+    ungroup()
   
   # bind whether each individual was a chronic carrier in the particular year of interest
   
@@ -35,8 +45,12 @@ movihistory<-function(dis, preg, sad, collar, cap, gps, dbpath = NULL, export = 
     arrange(Pkey) %>%
     group_by(AID) %>%
     mutate(StateChange = ifelse(length(unique(pcr)) == 1, 'NO', 'YES')) %>%
+    mutate(BioYearChange = ifelse(length(unique(BioYear)) == 1, "NO", 'YES')) %>%
     ungroup() %>%
-    mutate(Carrier = ifelse(StateChange == "YES", 'NO', 'YES'))
+    mutate(Carrier = ifelse(StateChange == "YES", 'NO', 
+                            ifelse(StateChange == 'NO' & BioYearChange == "NO", 'MAYBE', 
+                                   'YES')))
+    
   
   
   carriers<-animals_sorted %>%
@@ -44,6 +58,8 @@ movihistory<-function(dis, preg, sad, collar, cap, gps, dbpath = NULL, export = 
     arrange(CaptureDate) %>%
     mutate(FirstPos = ifelse(Carrier == "YES", as.character(min(CaptureDate, na.rm = T)), NA), 
            LastPos = ifelse(Carrier == "YES", as.character(max(CaptureDate, na.rm = T)), NA)) %>%
+    mutate(FirstPos = ifelse(Carrier == "MAYBE", as.character(min(CaptureDate, na.rm = T)), NA), 
+           LastPos = ifelse(Carrier == "MAYBE", as.character(max(CaptureDate, na.rm = T)), NA)) %>%
     distinct(AID, .keep_all = T) %>%
     filter(Carrier == "YES") %>%
     mutate(HealthStatus = "Carrier")
@@ -78,8 +94,11 @@ movihistory<-function(dis, preg, sad, collar, cap, gps, dbpath = NULL, export = 
     arrange(AID, CaptureDate) %>%
     group_by(AID) %>%
     mutate(StateChange = ifelse(length(unique(pcr)) == 1, 'NO', 'YES')) %>%
+    mutate(BioYearChange = ifelse(length(unique(BioYear)) == 1, 'NO', 'YES')) %>%
     ungroup() %>%
-    mutate(HealthStatus = ifelse(StateChange == "YES", 'Intermittent', 'Uninfected'))
+    mutate(HealthStatus = ifelse(StateChange == "YES", 'Intermittent',
+                                 ifelse(StateChange == 'NO' & pcr == 'NOT DETECTED',
+                                        'Uninfected', 'Possible')))
   
   
   status<-plyr::rbind.fill(carriers, non_carriers)
@@ -123,10 +142,12 @@ movihistory<-function(dis, preg, sad, collar, cap, gps, dbpath = NULL, export = 
                               T ~ 'Alive'))
   
   
+  
   movi<-c(
     'Carrier' = 'CC', 
     'Intermittent' = 'INT', 
-    'Uninfected' = 'HEALTHY'
+    'Uninfected' = 'HEALTHY', 
+    'Possible' = 'POSSIBLE CC'
   )
   
   
