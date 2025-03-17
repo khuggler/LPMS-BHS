@@ -11,9 +11,22 @@ agetab<-sad %>%
   arrange(Capture_Date) %>%
   filter(Capture_Date == min(Capture_Date, na.rm = T)) %>%
   ungroup() %>%
-  mutate(Years_Old = ifelse(Age_Class == "Yearling", 1.9, ifelse(Age_Class == "Lamb", 0.9, Years_Old))) %>%
+  mutate(CaptureMonth = strftime(Capture_Date, format = "%m")) %>%
+  mutate(Years_Old = case_when(Age_Class == "Yearling" & CaptureMonth == "02" ~ 1.8, 
+                               Age_Class == "Yearling" & CaptureMonth == "03" ~ 1.9, 
+                               Age_Class == "Yearling" & CaptureMonth == "10" ~ 1.5, 
+                               Age_Class == "Yearling" & CaptureMonth == "11" ~ 1.5, 
+                               Age_Class == "Yearling" & CaptureMonth == "01" ~ 1.7, 
+                               Age_Class == "Yearling" & CaptureMonth == "12" ~ 1.8, 
+                               Age_Class == "Lamb" & CaptureMonth == "02" ~ 0.8, 
+                               Age_Class == "Lamb" & CaptureMonth == "03" ~ 0.9, 
+                               Age_Class == "Lamb" & CaptureMonth == "10" ~ 0.5, 
+                               Age_Class == "Lamb" & CaptureMonth == "11" ~ 0.5, 
+                               Age_Class == "Lamb" & CaptureMonth == "01" ~ 0.7, 
+                               Age_Class == "Lamb" & CaptureMonth == "12" ~ 0.8, 
+                               T ~ Years_Old)) %>%
   mutate(CapYear = as.numeric(strftime(Capture_Date, format = "%Y"))) %>%
-  mutate(BirthYear = CapYear - floor(as.numeric(Years_Old))) %>%
+  mutate(BirthYear = CapYear - ceiling(as.numeric(Years_Old))) %>%
   mutate(DOB = mdy(paste0('06-01-', BirthYear))) %>%
   mutate(AgeType = ifelse(Sex == "Female" & Years_Old >=4, 'Minimum', 
                           ifelse(Sex == "Male", 'Known', 
@@ -44,9 +57,22 @@ agetab2<-sad %>%
   arrange(Capture_Date) %>%
   filter(Capture_Date == max(Capture_Date, na.rm = T)) %>%
   ungroup() %>%
-  mutate(Years_Old = ifelse(Age_Class == "Yearling", 1.9, ifelse(Age_Class == "Lamb", 0.9, Years_Old))) %>%
+  mutate(CaptureMonth = strftime(Capture_Date, format = "%m")) %>%
+  mutate(Years_Old = case_when(Age_Class == "Yearling" & CaptureMonth == "02" ~ 1.8, 
+                               Age_Class == "Yearling" & CaptureMonth == "03" ~ 1.9, 
+                               Age_Class == "Yearling" & CaptureMonth == "10" ~ 1.5, 
+                               Age_Class == "Yearling" & CaptureMonth == "11" ~ 1.5, 
+                               Age_Class == "Yearling" & CaptureMonth == "01" ~ 1.7, 
+                               Age_Class == "Yearling" & CaptureMonth == "12" ~ 1.8, 
+                               Age_Class == "Lamb" & CaptureMonth == "02" ~ 0.8, 
+                               Age_Class == "Lamb" & CaptureMonth == "03" ~ 0.9, 
+                               Age_Class == "Lamb" & CaptureMonth == "10" ~ 0.5, 
+                               Age_Class == "Lamb" & CaptureMonth == "11" ~ 0.5, 
+                               Age_Class == "Lamb" & CaptureMonth == "01" ~ 0.7, 
+                               Age_Class == "Lamb" & CaptureMonth == "12" ~ 0.8, 
+                               T ~ Years_Old)) %>%
   mutate(CapYear = as.numeric(strftime(Capture_Date, format = "%Y"))) %>%
-  mutate(BirthYear = CapYear - floor(as.numeric(Years_Old))) %>%
+  mutate(BirthYear = CapYear - ceiling(as.numeric(Years_Old))) %>%
   mutate(DOB = mdy(paste0('06-01-', BirthYear))) %>%
   mutate(AgeType = ifelse(Sex == "Female" & Years_Old >=4, 'Minimum', 
                           ifelse(Sex == "Male", 'Known', 
@@ -87,7 +113,7 @@ animalinfo<-sad %>%
   mutate(CaptureNumber = row_number()) %>%
   ungroup() %>%
   left_join(agetab[, c('Animal_ID', 'Age_Class', 'DOB', 'AgeType')], by = "Animal_ID") %>%
-  mutate(AgeatCapYears = round(abs(as.numeric(difftime(DOB, Capture_Date, units = "weeks"))/52), digits = 1)) %>%
+  mutate(AgeatCapYears = ceiling(abs(as.numeric(difftime(DOB, Capture_Date, units = "weeks"))/52))) %>%
   mutate(AgeYears = ifelse(Sex == "Female" & AgeType == "Minimum", 
                            paste0(round(as.numeric(abs(difftime(DOB, Sys.Date(), units = "weeks"))/52), digits = 1), "+"),
                            round(as.numeric(abs(difftime(DOB, Sys.Date(), units = "weeks"))/52), digits = 1))) %>% 
@@ -137,7 +163,11 @@ animalinfo<-animalinfo %>%
          Brand = Manufacturer, 
          Hardware = `Hardware side`, 
          BottomCollar = `Bottom collar color`, 
-         TopCollar = `Top collar color`)
+         TopCollar = `Top collar color`) %>%
+  mutate(Age_Class_atCap = Age_Class, 
+         Age_Class_Current = case_when(AgeYears >= 1 & AgeYears <=2 ~ 'Yearling', 
+                                       AgeYears < 1 ~ 'Lamb', 
+                                       AgeYears >2 ~ 'Adult'))
 
 ## clean up
 

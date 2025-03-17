@@ -9,8 +9,10 @@ movihistory<-function(dis, preg, sad, collar, cap, gps, yearstart = 2019, yearen
   info<-animalinfo(sad, collar, cap, export = F) 
   info<-info %>%
     group_by(AID) %>%
+    arrange(AID, Capture_Date) %>%
     summarize(AgeYears = last(AgeYears), 
-              Age_Class = last(Age_Class), 
+              Age_Class_Current = last(Age_Class_Current), 
+              Age_Class_atCap = first(Age_Class_atCap),
               EweGroup = last(EweGroup))
   
   morts<-mortable(sad, export = F)
