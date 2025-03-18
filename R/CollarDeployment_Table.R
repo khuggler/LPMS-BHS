@@ -47,7 +47,7 @@ collartable<-function(sad, dbpath = NULL, export = F){
       censortypes<-end_dates$CensorType ## is there a blank in censor type (she hasn't been recaptured again)
       
       if("" %in% censortypes){
-        end<-Sys.Date()
+        end<-Sys.Date() + days(1)
       }else{
       end_date<-max(c(end_dates$CensorDate, end_dates$FateDate), na.rm = T)
       end<-end_date
@@ -56,7 +56,7 @@ collartable<-function(sad, dbpath = NULL, export = F){
       }
       
       if(end == -Inf){
-        end<-Sys.Date()
+        end<-Sys.Date() + days(1)
       }
       
       
