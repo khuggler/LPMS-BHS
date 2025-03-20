@@ -1,4 +1,4 @@
-gpsdata<-function(sad, ATS_usrs, ATS_pass, telonic_usrs, telonic_pass, veckeys, dbpath = NULL, export = F){
+gpsdata<-function(sad, collar, cap, ATS_usrs, ATS_pass, telonic_usrs, telonic_pass, veckeys, dbpath = NULL, export = F){
   
   # get the collars to pull
   saddat<-animalinfo(sad, collar, cap, export = F)
@@ -96,7 +96,8 @@ gpsdata<-function(sad, ATS_usrs, ATS_pass, telonic_usrs, telonic_pass, veckeys, 
       
       tel <- tel %>%
         rename(tdate = "GPS.Fix.Time", x = "GPS.Longitude", y = "GPS.Latitude", SN = "CollarSerialNumber") %>%
-        dplyr::select(SN, tdate, x, y)
+        dplyr::select(SN, tdate, x, y) %>%
+        mutate(tdate = lubridate::with_tz(tdate, tzone = "America/Denver"))
       
       full.tel<-rbind(tel, full.tel)
       
@@ -173,7 +174,7 @@ gpsdata<-function(sad, ATS_usrs, ATS_pass, telonic_usrs, telonic_pass, veckeys, 
                              origin = vec$tdate)
       vec<-data.frame(vec)
       
-      vec$tdate<-lubridate::with_tz(vec$tdate, tzone = 'MST')
+      vec$tdate<-lubridate::with_tz(vec$tdate, tzone = 'America/Denver')
     
     
     # bind all the data together 
@@ -244,8 +245,8 @@ gpsdata<-function(sad, ATS_usrs, ATS_pass, telonic_usrs, telonic_pass, veckeys, 
   
    
    gpsfull<-gpsfull %>%
-     left_join(saddat[, c('AID', 'EweGroup', 'DOB', 'AgeatCapYears', 'Sex')], by = "AID")
-    
+     left_join(saddat[, c('AID', 'EweGroup', 'DOB', 'AgeatCapYears', 'Sex')], by = "AID") %>%
+     distinct(AID, tdate, .keep_all = T)
    
    if(!is.null(dbpath)){
      con <- dbConnect(odbc::odbc(),

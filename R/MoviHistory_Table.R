@@ -19,7 +19,9 @@ movihistory<-function(dis, preg, sad, collar, cap, gps, yearstart = 2019, yearen
   
   fails<-failtable(sad, gps)
   
-  wide_df<-diseasetable(dis, preg, export = F)
+  wide_df<-diseasetable(dis, preg, export = F) %>%
+    ungroup()
+  
   wide_df<- wide_df %>%
    rowwise() %>%
     mutate(BioYear = bio.years$Year[which(CaptureDate >= bio.years$StartDate & CaptureDate < bio.years$EndDate)]) %>%
@@ -46,7 +48,7 @@ movihistory<-function(dis, preg, sad, collar, cap, gps, yearstart = 2019, yearen
   animals_sorted <- animals_with_multiple_positives %>%
     arrange(Pkey) %>%
     group_by(AID) %>%
-    mutate(StateChange = ifelse(length(unique(pcr)) == 1, 'NO', 'YES')) %>%
+    mutate(StateChange = ifelse(length(unique(tail(pcr,2))) == 1, 'NO', 'YES')) %>%
     mutate(BioYearChange = ifelse(length(unique(BioYear)) == 1, "NO", 'YES')) %>%
     ungroup() %>%
     mutate(Carrier = ifelse(StateChange == "YES", 'NO', 
@@ -158,6 +160,25 @@ movihistory<-function(dis, preg, sad, collar, cap, gps, yearstart = 2019, yearen
     dplyr::select(-HealthStatus) %>%
     left_join(records, by = "AID") 
   
+  
+  firstpos<-wide_df %>%
+    distinct(Pkey, .keep_all = T) %>%
+    filter(!is.na(pcr))  %>%
+    filter(pcr == "DETECTED") %>%
+    group_by(AID) %>%
+    arrange(AID, CaptureDate) %>% 
+    slice_min(CaptureDate, n = 1, with_ties = F) %>%
+  ungroup() %>%
+    left_join(pos[, c('AID', 'AgeYears')], by = "AID") %>%
+    mutate(AgeYears = as.numeric(stringr::str_remove(AgeYears, "\\+"))) %>%
+    mutate(DOB = Sys.Date() - lubridate::years(round(AgeYears))) %>%
+    mutate(AgeatFirstPos = abs(as.numeric(difftime(CaptureDate, DOB, units = "weeks")/52))) %>%
+    mutate(AgeatFirstPos = case_when(AgeatFirstPos < 1 ~ 'Lamb', 
+                                     AgeatFirstPos > 1 & AgeatFirstPos < 2 ~ 'Yearling', 
+                                      T ~ 'Adult'))
+    
+  pos<-pos %>%
+    left_join(firstpos[, c('AID', 'AgeatFirstPos')], by = 'AID')
 
   if(!is.null(dbpath)){
   con <- dbConnect(odbc::odbc(),

@@ -3,8 +3,13 @@ diseasetable<-function(dis, preg, dbpath = NULL, export = F){
   wide_df <- dis %>%
     mutate(test = case_when(TestLab == "HUYVAERT" ~ 'BIOMEME', T ~ test)) %>%
     mutate(TestLab = 'WADDL') %>% 
+    filter(GMU %in% c('21', '21A', '28')) %>%
     dplyr::select(ScanID, Animal_ID, Capture_Date, test, TestResult, TestLab, TestLabdate) %>%
     distinct(ScanID, Animal_ID, Capture_Date, test, TestResult, TestLabdate) %>%
+    mutate(Capture_Date = as.Date(as.numeric(Capture_Date), origin = "1899-12-30")) %>%
+    mutate(test = case_when(test == "SWAB NASAL" ~ "M.OVI (PCR)", 
+                            T ~ test)) %>%
+    filter(test %in% c('M.OVI (PCR)', 'M.OVI (ELISA)', 'M.OVI (MLST)', 'BIOMEME')) %>%
     select(-TestLabdate)
    
   wide_df<- wide_df %>%
