@@ -1,4 +1,4 @@
-mortable<-function(sad, dbpath = NULL, export = F){
+mortable<-function(sad, dis, dbpath = NULL, export = F){
   
   mortab<-sad %>%
     distinct(Animal_ID, Capture_Date, .keep_all = T) %>%
@@ -113,6 +113,11 @@ mortable<-function(sad, dbpath = NULL, export = F){
     mutate(LastKnownAlive = MortDate - days(1)) %>%
     left_join(lastcap, by = c("AID" = "Animal_ID")) %>%
     filter(!is.na(MortDate))
+  
+  disease<-diseasetable(dis, preg = NULL, export_morts = T, export = F)
+  
+  morts<-morts %>%
+    left_join(disease[, c('AID', 'elisa', 'mlst', 'pcr', 'elisa_c')], by = 'AID')
 
   if(!is.null(dbpath)){
   con <- dbConnect(odbc::odbc(),

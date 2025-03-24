@@ -38,7 +38,8 @@ dbpath = 'C:/Users/katey.huggler/Dropbox/PostDoc/Data/Capture/MasterDB/'
 sad<-read.csv('D:/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/SAD.csv')
 collar<-readxl::read_xlsx('D:/State of Idaho/Research Group-Lower Panther - Main Salmon Sheep Research - LPMS/Collars/LPMSCollarDeployment_250304.xlsx')
 cap<-readxl::read_xlsx('D:/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/LPMSSheepCapture_250311.xlsx')
-dis<-readxl::read_xlsx('D:/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/MoviQuery.xlsx')
+ss<-readxl::read_xlsx('D:/State of Idaho/Research Group-Lower Panther - Main Salmon Sheep Research - LPMS/AdultSurvival/LPMS_studySheep_250304.xlsx')
+dis<-readxl::read_xlsx('D:/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/MoviQuery.xlsx', sheet = "Movi")
 preg<-readxl::read_xlsx('D:/Dropbox/PostDoc/Data/Capture/MasterDB/Intermediates/MoviQuery.xlsx', sheet = "Preg")
 
 gps<-read.csv('D:/Dropbox/PostDoc/Data/GPSData/LPMS_GPS.csv')
@@ -60,12 +61,12 @@ dbpath = 'D:/Dropbox/PostDoc/Data/Capture/MasterDB/'
 
 
 
-animalinfo(sad, collar, cap, dbpath, export = T)
+animalinfo(sad, collar, cap, ss, dbpath, export = T)
 failtable(sad, gps, dbpath, export = T)
 collartable(sad, dbpath, export = T)
-diseasetable(dis, preg, dbpath, export = T)
-mortable(sad, dbpath, export = T)
-movihistory(dis, preg, sad, collar, cap, gps, yearstart = 2019, yearend = 2028, dbpath, export = T)
+diseasetable(dis, preg, dbpath, export_morts = F, export = T)
+mortable(sad, dis, dbpath, export = T)
+movihistory(dis, preg, sad, collar, cap, gps, ss, yearstart = 2019, yearend = 2028, dbpath, export = T)
 #collarinventory(sad, gps, dbpath)
 
 

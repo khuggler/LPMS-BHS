@@ -1,4 +1,4 @@
-movihistory<-function(dis, preg, sad, collar, cap, gps, yearstart = 2019, yearend = 2028, dbpath = NULL, export = F){
+movihistory<-function(dis, preg, sad, collar, cap, gps, ss, yearstart = 2019, yearend = 2028, dbpath = NULL, export = F){
   
   bio.years<-data.frame(Year = yearstart:yearend)
   bio.years$StartDate<-as.Date(paste0(bio.years$Year, "-", "05-01"), format = "%Y-%m-%d")
@@ -6,16 +6,16 @@ movihistory<-function(dis, preg, sad, collar, cap, gps, yearstart = 2019, yearen
   
   
   
-  info<-animalinfo(sad, collar, cap, export = F) 
+  info<-animalinfo(sad, collar, cap, ss, dbpath, export = F)
   info<-info %>%
     group_by(AID) %>%
     arrange(AID, Capture_Date) %>%
     summarize(AgeYears = last(AgeYears), 
               Age_Class_Current = last(Age_Class_Current), 
-              Age_Class_atCap = first(Age_Class_atCap),
+              Age_Class_Cap = first(Age_Class_Cap),
               EweGroup = last(EweGroup))
   
-  morts<-mortable(sad, export = F)
+  morts<-mortable(sad, dis, export = F)
   
   fails<-failtable(sad, gps)
   
