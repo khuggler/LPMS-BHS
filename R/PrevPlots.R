@@ -12,10 +12,10 @@ cap <- RODBC::sqlQuery(DBPath, "SELECT * FROM AnimalInfo")
 
 
 long_data <- movi %>%
-  left_join(cap[, c('EweGroup', 'Sex', 'Age_Class', 'Pkey')], by = 'Pkey') %>%
+  left_join(cap[, c('EweGroup', 'Sex', 'Age_Class_Cap', 'Age_Class_Current', 'Pkey')], by = 'Pkey') %>%
   mutate(EweGroup = case_when(AID == "230059" & CaptureDate > ymd("2024-01-01") ~ 'Tower Kriley', 
                               T ~ EweGroup)) %>%
-  filter(Sex == "Female" & Age_Class != "Lamb") %>%
+  filter(Sex == "Female" & Age_Class_Cap != "Lamb") %>%
   filter(!is.na(EweGroup))
 
 

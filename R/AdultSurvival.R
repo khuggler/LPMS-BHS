@@ -2,16 +2,16 @@ adultsurvival<-function(acc_path, yearstart, yearend, savewd){
 
 setwd(acc_path)
 
-DBPath <- odbcDriverConnect("Driver={Microsoft Access Driver (*.mdb, *.accdb)};
+DBPath <- RODBC::odbcDriverConnect("Driver={Microsoft Access Driver (*.mdb, *.accdb)};
                             dbq=./LPMS_MasterDatabase.accdb") #dbq=./HighlandsBHS.accdb")
 
-morts<-sqlQuery(DBPath, "SELECT * FROM Mortalities")
-fails<-sqlQuery(DBPath, "SELECT * FROM Failed")
+morts<-RODBC::sqlQuery(DBPath, "SELECT * FROM Mortalities")
+fails<-RODBC::sqlQuery(DBPath, "SELECT * FROM Failed")
 
 morts<-plyr::rbind.fill(morts, fails)
 
 
-aid <- sqlQuery(DBPath, "SELECT * FROM AnimalInfo") %>%
+aid <- RODBC::sqlQuery(DBPath, "SELECT * FROM AnimalInfo") %>%
   left_join(morts, by = 'AID') %>%
   group_by(AID) %>%
   mutate(CensorDate = as.POSIXct(CensorDate)) %>%
@@ -27,7 +27,7 @@ aid <- sqlQuery(DBPath, "SELECT * FROM AnimalInfo") %>%
 
 
 aid<-aid %>%
-  filter(Sex.x == "Female" & Age_Class != 'Lamb')
+  filter(Sex.x == "Female" & Age_Class_Current != 'Lamb')
 
 
 
@@ -158,9 +158,8 @@ for(j in 1:length(years)){
   
   # survival analysis
   
-  library(survival)
-  library(survminer)
-  survival<- survSplit(Surv(Start, End, mort)~.,
+
+  survival<- survival::survSplit(Surv(Start, End, mort)~.,
                        data = adult.survivalyear,
                        cut = 1:12,
                        end = "End", 

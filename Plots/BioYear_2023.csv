@@ -1,5 +1,5 @@
 "","Year","Herd","Sex","n.risk","n.event","surv","std.err","lower","upper"
-"1",2023,"Sex=Female"," Herd=Clear Creek ",31,0,1,0,1,1
-"2",2023,"Sex=Female"," Herd=Ebenezer    ",51,3,0.920379839298758,0.0440933251817911,0.837891815295142,1
+"1",2023,"Sex=Female"," Herd=Clear Creek ",33,0,1,0,1,1
+"2",2023,"Sex=Female"," Herd=Ebenezer    ",52,4,0.898785425101215,0.0479650860114707,0.809525107998075,0.997887813970425
 "3",2023,"Sex=Female"," Herd=Indianola   ",61,6,0.879481855650934,0.0463550337634351,0.793162963287295,0.975194720657983
-"4",2023,"Sex=Female"," Herd=Tower Kriley",22,0,1,0,1,1
+"4",2023,"Sex=Female"," Herd=Tower Kriley",23,0,1,0,1,1
