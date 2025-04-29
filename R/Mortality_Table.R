@@ -1,4 +1,4 @@
-mortable<-function(sad, dis, dbpath = NULL, export = F){
+mortable<-function(sad, dis, vir, par, mort, dbpath = NULL, export = F){
   
   mortab<-sad %>%
     distinct(Animal_ID, Capture_Date, .keep_all = T) %>%
@@ -114,11 +114,17 @@ mortable<-function(sad, dis, dbpath = NULL, export = F){
     left_join(lastcap, by = c("AID" = "Animal_ID")) %>%
     filter(!is.na(MortDate))
   
-  disease<-diseasetable(dis, preg = NULL, export_morts = T, export = F)
+  disease<-diseasetable(dis, preg = NULL, vir, par, export_morts = T, export = F)
   
   morts<-morts %>%
-    left_join(disease[, c('AID', 'elisa', 'mlst', 'pcr', 'elisa_c')], by = 'AID')
+    left_join(disease[, c('AID', 'CaptureDate', 'Source', 'TestLab', 
+                      'baermann', 'btv', 'cestode', 'ehd', 'sinustumor', 'elisa', 
+                      'mlst', 'pcr_nasal', 'pcr_lung', 'pcr_bronchial', 'nematode', 'o/p float', 'roundworm', 'sarcocystis', 'elisa_c')], by = 'AID')
 
+  morts<-morts %>%
+    select(-LastKnownAlive) %>%
+    left_join(mort, by = "AID")
+  
   if(!is.null(dbpath)){
   con <- dbConnect(odbc::odbc(),
                    Driver = "Microsoft Access Driver (*.mdb, *.accdb)",

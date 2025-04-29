@@ -1,7 +1,7 @@
-gpsdata<-function(sad, collar, cap, ATS_usrs, ATS_pass, telonic_usrs, telonic_pass, veckeys, dbpath = NULL, export = F){
+gpsdata<-function(sad, collar, cap, ss, ATS_usrs, ATS_pass, telonic_usrs, telonic_pass, veckeys, dbpath = NULL, export = F){
   
   # get the collars to pull
-  saddat<-animalinfo(sad, collar, cap, export = F)
+  saddat<-animalinfo(sad, collar, cap,ss, export = F)
   uni_collars<-unique(saddat$Serial)
   
   

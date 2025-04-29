@@ -15,11 +15,11 @@ movihistory<-function(dis, preg, sad, collar, cap, gps, ss, yearstart = 2019, ye
               Age_Class_Cap = first(Age_Class_Cap),
               EweGroup = last(EweGroup))
   
-  morts<-mortable(sad, dis, export = F)
+  morts<-mortable(sad, dis, vir, par, mort, dbpath, export = F)
+
+  fails<-failtable(sad, gps, mort)
   
-  fails<-failtable(sad, gps)
-  
-  wide_df<-diseasetable(dis, preg, export = F) %>%
+  wide_df<-diseasetable(dis, preg, vir, par, dbpath, export_morts = F, export = F) %>%
     ungroup()
   
   wide_df<- wide_df %>%
@@ -37,18 +37,18 @@ movihistory<-function(dis, preg, sad, collar, cap, gps, ss, yearstart = 2019, ye
   # remove duplicate rows in the capture database 
   cap<-wide_df %>%
     distinct(Pkey, .keep_all = T) %>%
-    filter(!is.na(pcr)) 
+    filter(!is.na(pcr_nasal)) 
   
   animals_with_multiple_positives <- cap %>%
     group_by(AID) %>%
-    filter(sum(pcr == "DETECTED") >= 2, n() >= 2) %>%  # Only animals with at least 2 positive tests and 2 captures
+    filter(sum(pcr_nasal == "DETECTED") >= 2, n() >= 2) %>%  # Only animals with at least 2 positive tests and 2 captures
     ungroup()
   
   
   animals_sorted <- animals_with_multiple_positives %>%
     arrange(Pkey) %>%
     group_by(AID) %>%
-    mutate(StateChange = ifelse(length(unique(tail(pcr,2))) == 1, 'NO', 'YES')) %>%
+    mutate(StateChange = ifelse(length(unique(tail(pcr_nasal,2))) == 1, 'NO', 'YES')) %>%
     mutate(BioYearChange = ifelse(length(unique(BioYear)) == 1, "NO", 'YES')) %>%
     ungroup() %>%
     mutate(Carrier = ifelse(StateChange == "YES", 'NO', 
@@ -97,11 +97,11 @@ movihistory<-function(dis, preg, sad, collar, cap, gps, ss, yearstart = 2019, ye
   non_carriers <- animals_captured_twice %>%
     arrange(AID, CaptureDate) %>%
     group_by(AID) %>%
-    mutate(StateChange = ifelse(length(unique(pcr)) == 1, 'NO', 'YES')) %>%
+    mutate(StateChange = ifelse(length(unique(pcr_nasal)) == 1, 'NO', 'YES')) %>%
     mutate(BioYearChange = ifelse(length(unique(BioYear)) == 1, 'NO', 'YES')) %>%
     ungroup() %>%
     mutate(HealthStatus = ifelse(StateChange == "YES", 'Intermittent',
-                                 ifelse(StateChange == 'NO' & pcr == 'NOT DETECTED',
+                                 ifelse(StateChange == 'NO' & pcr_nasal == 'NOT DETECTED',
                                         'Uninfected', 'Possible')))
   
   
@@ -133,8 +133,8 @@ movihistory<-function(dis, preg, sad, collar, cap, gps, ss, yearstart = 2019, ye
   records<-allcap %>%
     arrange(AID, CaptureDate) %>%
     group_by(AID) %>%
-    filter(!is.na(pcr)) %>%
-    mutate(pcr = stringr::str_replace_all(pcr, movi)) %>%
+    filter(!is.na(pcr_nasal)) %>%
+    mutate(pcr = stringr::str_replace_all(pcr_nasal, movi)) %>%
     mutate(elisa = stringr::str_replace_all(elisa, movi)) %>%
     summarise(DateRecord = paste(CapName, collapse = "|"), 
               `PCR Record` = paste(pcr, collapse = "|"), 
@@ -163,8 +163,8 @@ movihistory<-function(dis, preg, sad, collar, cap, gps, ss, yearstart = 2019, ye
   
   firstpos<-wide_df %>%
     distinct(Pkey, .keep_all = T) %>%
-    filter(!is.na(pcr))  %>%
-    filter(pcr == "DETECTED") %>%
+    filter(!is.na(pcr_nasal))  %>%
+    filter(pcr_nasal == "DETECTED") %>%
     group_by(AID) %>%
     arrange(AID, CaptureDate) %>% 
     slice_min(CaptureDate, n = 1, with_ties = F) %>%

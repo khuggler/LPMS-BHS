@@ -1,7 +1,8 @@
-failtable<-function(sad, gps, dbpath = NULL, export = F){
+failtable<-function(sad, gps, mort, dbpath = NULL, export = F){
     mortab<-sad %>%
       distinct(Animal_ID, Capture_Date, .keep_all = T) %>%
       filter(Capture_GMU %in% c('21', '21A', '28')) %>%
+      filter(!Cap_GenLoc %in% c('Lake Creek', 'Williams Creek')) %>%
       mutate(Capture_Date = ymd(Capture_Date)) %>%
       filter(Capture_Date > ymd("2020-01-01")) %>%
       mutate(FateDate = ymd(FateDate)) %>%
@@ -134,6 +135,12 @@ failtable<-function(sad, gps, dbpath = NULL, export = F){
       filter(!is.na(CensorDate))
     
     failslip<-rbind(mmm, failed)
+    
+    failslip<-failslip %>%
+      select(-LastKnownAlive) %>%
+      left_join(mort, by = "AID") %>%
+      mutate(LastKnownAlive = case_when(is.na(LastKnownAlive) ~ CensorDate, 
+                                        T ~ as.character(LastKnownAlive)))
     
     if(!is.null(dbpath)){
     con <- dbConnect(odbc::odbc(),

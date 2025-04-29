@@ -1,19 +1,69 @@
-diseasetable<-function(dis, preg, export_morts = F, dbpath = NULL, export = F){
+diseasetable<-function(dis, preg, vir, par, export_morts = F, dbpath = NULL, export = F){
   
   wide_df <- dis %>%
     mutate(test = case_when(TestLab == "HUYVAERT" ~ 'BIOMEME', T ~ test)) %>%
     mutate(TestLab = 'WADDL') %>% 
     filter(UNIT %in% c('21', '21A', '28')) %>%
     mutate(Animal_ID = AnimalID) %>%
-    dplyr::select(ScanID, Animal_ID, Capture_Date, SOURCE, test, TestResult, TestLab, TestLabdate) %>%
+    filter(AnimalID != "NA") %>%
+    dplyr::select(ScanID, TestCaseNo, Animal_ID, Capture_Date, SOURCE, SampleType, test, TestResult, TestLab, TestLabdate) %>%
     # remove duplicate rows 
     distinct(ScanID, Animal_ID, Capture_Date, test, TestResult, TestLabdate, .keep_all = T) %>%
     mutate(Capture_Date = as.Date(as.numeric(Capture_Date), origin = "1899-12-30")) %>%
     mutate(test = case_when(test == "SWAB NASAL" ~ "M.OVI (PCR)", 
+                            test == "CULTURE" ~ TestResult, 
                             T ~ test)) %>%
-    filter(test %in% c('M.OVI (PCR)', 'M.OVI (ELISA)', 'M.OVI (MLST)', 'BIOMEME')) %>%
-    dplyr::select(-TestLabdate)
+    mutate(SampleType = case_when(SampleType %in% c('SWAB NASAL DRY', 'SWAB', 'SWAB NASAL', 'SWAB NASAL DRY 2') ~ 'NASAL', 
+                                  SampleType == 'SWAB OP TSB' ~ 'OP_TSB', 
+                                  SampleType == 'SWAB NASAL TSB' ~ 'NASAL_TSB',
+                                  SampleType == 'SWAB BRONCHIAL' ~ 'BRONCHIAL', 
+                                  T ~ SampleType)) %>%
+    mutate(test = case_when(test == 'M.OVI (PCR)' ~ paste0(test, "_", SampleType), 
+                            T ~ test)) %>%
+    filter(test %in% c('M.OVI (PCR)_LUNG', 'M.OVI (PCR)_BRONCHIAL', 'M.OVI (PCR)_NASAL', 'M.OVI (ELISA)', 'M.OVI (MLST)', 'BIOMEME', 'HISTOLOGY (M.OVI NASAL SINUS TUMOR)', 'BIBERSTEINIA TREHALOSI', 'MANHEIMIA HAEMOLYTICA', 'MIXED BACTERIA')) %>%
+    dplyr::select(-TestLabdate, -SampleType)
   
+  vir_df <- vir %>%
+    #mutate(test = case_when(TestLab == "HUYVAERT" ~ 'BIOMEME', T ~ test)) %>%
+    mutate(TestLab = 'WADDL') %>% 
+    filter(UNIT %in% c('21', '21A', '28')) %>%
+    mutate(Animal_ID = AnimalID) %>%
+    filter(AnimalID != "NA") %>%
+    dplyr::select(ScanID, TestCaseNo, Animal_ID, Capture_Date, SOURCE, Test, result, TestLab, TestLabDate) %>%
+    # remove duplicate rows 
+    distinct(ScanID, Animal_ID, Capture_Date, Test, result, TestLabDate, .keep_all = T) %>%
+    mutate(Capture_Date = as.Date(as.numeric(Capture_Date), origin = "1899-12-30")) %>%
+    mutate(Test = case_when(Test == "MCF (ELISA" ~ "MCF (ELISA)", 
+                            T ~ Test)) %>%
+    filter(Test %in% c('BRSV (VN)', 'IBR (VN)', 'PIV3 (VN)', 'MCF (ELISA)', 'BTV (ELISA)', 'EHD (ELISA)', 'BTV (PCR)', 'EHD (PCR)', 'BTV (cELISA)', 'EHD (cELISA)')) %>%
+    dplyr::select(-TestLabDate)
+  
+  names(vir_df)<-names(wide_df)
+  
+  
+  # parasites
+  par_df <- par %>%
+    #mutate(test = case_when(TestLab == "HUYVAERT" ~ 'BIOMEME', T ~ test)) %>%
+    mutate(ParaTestLab = 'WADDL') %>% 
+    filter(UNIT %in% c('21', '21A', '28')) %>%
+    mutate(Animal_ID = AnimalID) %>%
+    filter(AnimalID != "NA") %>%
+    dplyr::select(ScanID, ParaTestLabNo, Animal_ID, Capture_Date, SOURCE, ParaTestType, ParaIdentified, ParaTestLab, ParaDate) %>%
+    # remove duplicate rows 
+    distinct(ScanID, Animal_ID, Capture_Date, ParaTestType, ParaIdentified, ParaDate, .keep_all = T) %>%
+    mutate(Capture_Date = as.Date(as.numeric(Capture_Date), origin = "1899-12-30")) %>%
+    mutate(ParaDate = as.Date(as.numeric(ParaDate), origin = "1899-12-30")) %>%
+    mutate(ParaTestType = case_when(ParaTestType == 'HISTOLOGY' ~ ParaIdentified, 
+                                    ParaTestType == 'PARASITE ID' ~ ParaIdentified, 
+                                    T ~ ParaTestType)) %>%
+    filter(ParaTestType %in% c('TOXOPLASMA (IFA)', 'NEMATODIRUS SPP', 'SARCOCYSTIS SP', 'CESTODE SP', 'PSOROPTES OVIS', 'BAERMANN', 'O/P FLOAT', 'OTOBIUS SPP', 'ROUNDWORM', 'DERMACENTOR SPP')) %>%
+    dplyr::select(-ParaDate)
+  
+  names(par_df)<-names(wide_df)
+  
+  
+  
+  wide_df<-rbind(wide_df, vir_df, par_df)
   
   if(export_morts == TRUE){
     wide_df<-wide_df %>%
@@ -38,8 +88,9 @@ diseasetable<-function(dis, preg, export_morts = F, dbpath = NULL, export = F){
     wide_df<-wide_df %>%
       left_join(inhib[, c('ScanID', 'Animal_ID', 'GrowthAmount')], by = c('ScanID', 'Animal_ID')) 
         
-    names(wide_df)<-c('ScanID', 'AID', 'CaptureDate', 'Source', 'TestLab', 'elisa', 
-                                                                                            'mlst', 'pcr', 'elisa_c')                                                                 
+    names(wide_df)<-c('ScanID', 'WADDLCaseNo', 'AID', 'CaptureDate', 'Source', 'TestLab', 
+                      'baermann', 'btv', 'cestode', 'ehd', 'sinustumor', 'elisa', 
+                                                                                            'mlst', 'pcr_bronchial', 'pcr_lung', 'pcr_nasal', 'nematode', 'o/p float', 'roundworm', 'sarcocystis', 'elisa_c')                                                                 
                                                                           
     
   }else{
@@ -84,8 +135,7 @@ diseasetable<-function(dis, preg, export_morts = F, dbpath = NULL, export = F){
     filter(!is.na(Animal_ID)) %>%
     filter(Animal_ID != "NA")
   
-  names(wide_df)<-c('ScanID', 'AID', 'CaptureDate', 'Source', 'TestLab', 'biomeme', 'elisa', 
-                    'mlst', 'pcr', 'elisa_c', 'pspb', 'ultrasound')
+  names(wide_df)<-c('ScanID', 'WADDLCaseNo', 'AID', 'CaptureDate', 'Source', 'TestLab', 'baermann', 'b_trehalosi', 'biomeme', 'brsv', 'btv_celisa', 'btv_elisa', 'dermacentor', 'ehd_celisa', 'ehd_elisa', 'ibr', 'elisa', 'mlst', 'pcr_nasal', 'mcf_elisa', 'mixed_bac', 'otobius', 'piv3', 'psoroptes', 'toxoplasma', 'elisa_c', 'pspb', 'ultrasound')
   
   wide_df<-wide_df %>%
     filter(!is.na(CaptureDate)) %>%
@@ -101,11 +151,17 @@ diseasetable<-function(dis, preg, export_morts = F, dbpath = NULL, export = F){
     filter(!is.na(CaptureDate)) %>%
     mutate(CaptureDate = ymd(CaptureDate)) %>%
     mutate(SampleYear = strftime(CaptureDate, format = "%Y")) %>%
-    dplyr::select(ScanID, AID, CaptureDate, CaptureNumber, SampleYear, biomeme, elisa, elisa_c, pcr, mlst, pspb, ultrasound, 
-           pregnancy) %>%
+    dplyr::select('ScanID', 'WADDLCaseNo', 'AID', 'CaptureDate', 'Source', 'TestLab', 'baermann', 'biomeme', 'brsv', 'btv_celisa', 'btv_elisa', 'dermacentor', 'ehd_celisa', 'ehd_elisa', 'ibr', 'elisa', 'mlst', 'pcr_nasal', 'mcf_elisa', 'otobius', 'piv3', 'psoroptes', 'toxoplasma', 'elisa_c', 'pspb', 'ultrasound', 'pregnancy', 'CaptureNumber') %>%
     mutate(Pkey = paste0(AID, "_", CaptureNumber))
   
   }
+  
+  wide_df<-wide_df %>%
+    group_by(AID, CaptureDate) %>%
+    summarise(
+      across(everything(), ~ first(na.omit(.))),  
+      .groups = "drop"
+    )
   
   if(!is.null(dbpath)){
   con <- dbConnect(odbc::odbc(),

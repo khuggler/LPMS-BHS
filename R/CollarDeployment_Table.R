@@ -42,16 +42,19 @@ collartable<-function(sad, dbpath = NULL, export = F){
         end<-max(c(subsub$FateDate, subsub$CensorDate), na.rm = T)
       
       }else{
-      end_dates<-subset(subsub, CensorType %in% c('Shed', 'Not Retrieved', 'Failed Collar', 'Recapture', "")) ## sometimes recapture written in censor type, but not actually censored
+      #end_dates<-subset(subsub, CensorType %in% c('Shed', 'Not Retrieved', 'Failed Collar', 'Recapture', "")) ## sometimes recapture written in censor type, but not actually censored
       
-      censortypes<-end_dates$CensorType ## is there a blank in censor type (she hasn't been recaptured again)
-      
-      if("" %in% censortypes){
-        end<-Sys.Date() + days(1)
-      }else{
-      end_date<-max(c(end_dates$CensorDate, end_dates$FateDate), na.rm = T)
-      end<-end_date
-      }
+      final_row<-subsub[nrow(subsub),]
+      end<-max(c(final_row$CensorDate, final_row$FateDate), na.rm = T)
+      # 
+      # censortypes<-end_dates$CensorType ## is there a blank in censor type (she hasn't been recaptured again)
+      # 
+      # if("" %in% censortypes){
+      #   end<-Sys.Date() + days(1)
+      # }else{
+      # end_date<-max(c(end_dates$CensorDate, end_dates$FateDate), na.rm = T)
+      # end<-end_date
+      # }
       
       }
       
